@@ -34,4 +34,4 @@ from .private import finders
 __author__ = 'Teriks'
 __copyright__ = 'Copyright (c) 2017 Teriks'
 __license__ = 'Three Clause BSD'
-__version__ = '0.2.0.0'
+__version__ = '0.2.1.0'
