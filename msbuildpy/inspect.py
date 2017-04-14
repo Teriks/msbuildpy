@@ -33,7 +33,8 @@ _PLATFORM = platform_system().lower()
 _MACHINE = platform_machine()
 
 _MACHINE_BITS_MAP = {
-    'AMD64': lambda: ARCH64, 
+    'AMD64': lambda: ARCH64,
+    'IA64': lambda: ARCH64,
     'x86_64': lambda: ARCH64,
     'i386': lambda: ARCH32,
     'x86': lambda: ARCH32
