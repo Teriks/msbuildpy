@@ -9,7 +9,7 @@ import msbuildpy
 from msbuildpy.inspect import get_mono_vm, ARCH64, ARCH32
 from msbuildpy.corflags import CorFlagsReader
 
-for i in msbuildpy.get_msbuild_paths('msbuild >=12.* | xbuild >=12.*'):
+for i in msbuildpy.find_msbuild('msbuild >=12.* | xbuild >=12.*'):
     print(i)
 
 

@@ -249,5 +249,5 @@ class Searcher:
         return list(values)
 
 
-def get_msbuild_paths(version_filter=None):
+def find_msbuild(version_filter=None):
     return Searcher().find(version_filter=version_filter)
