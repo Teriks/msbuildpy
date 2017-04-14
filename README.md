@@ -41,9 +41,9 @@ ToolEntry(name='xbuild', version=(14, 0), arch='32bit', path='C:\\Program Files 
 ToolEntry(name='xbuild', version=(12, 0), arch='64bit', path='C:\\Program Files\\Mono\\lib\\mono\\xbuild\\12.0\\bin\\xbuild.exe')
 ToolEntry(name='xbuild', version=(12, 0), arch='32bit', path='C:\\Program Files (x86)\\Mono\\lib\\mono\\xbuild\\12.0\\bin\\xbuild.exe')
 ToolEntry(name='dotnet build', version=(15, 1), arch='64bit', path='C:\\Program Files\\dotnet\\dotnet.exe')
-MonoVersion(version=(4, 8, 0), arch='64bit', path='C:\\Program Files\\Mono\\bin\\mono.exe')
-MonoVersion(version=(4, 8, 0), arch='32bit', path='C:\\Program Files (x86)\\Mono\\bin\\mono.exe')
-MonoVersion(version=(4, 8, 0), arch='64bit', path='C:\\Program Files\\Mono\\bin\\mono.exe')
+MonoVm(version=(4, 8, 0), arch='64bit', path='C:\\Program Files\\Mono\\bin\\mono.exe')
+MonoVm(version=(4, 8, 0), arch='32bit', path='C:\\Program Files (x86)\\Mono\\bin\\mono.exe')
+MonoVm(version=(4, 8, 0), arch='64bit', path='C:\\Program Files\\Mono\\bin\\mono.exe')
 AssemblyArchitecture.X86
 
 ```

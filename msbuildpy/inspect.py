@@ -102,7 +102,7 @@ def get_arch():
     return ARCH32 if is_32bit() else ARCH64
 
 
-MonoVm = namedtuple('MonoVersion', ['version', 'arch', 'path'])
+MonoVm = namedtuple('MonoVm', ['version', 'arch', 'path'])
 
 
 def _win_read_mono_vm_from_registry_key(key, arch):
