@@ -21,7 +21,7 @@
 
 
 from glob import glob
-from os.path import join as path_join, basename as path_basename, sep as path_sep, isdir as path_isdir
+from os.path import join as path_join, basename as path_basename, sep as path_sep, isdir as path_isdir, isfile as path_isfile
 from re import compile as re_compile
 from subprocess import check_output as proc_check_output, CalledProcessError
 
@@ -276,3 +276,24 @@ def _win_xbuild_path_x86():
         return None
         
 add_default_finder(_win_xbuild_path_x86)
+
+
+
+def _win_dotnetcli_msbuild():
+    if not is_windows(): return None
+    program_files = os_environ["ProgramW6432"]
+    program_files_x86 = os_environ["ProgramFiles(x86)"]
+    
+    cli1 = path_join(program_files, 'dotnet', 'dotnet.exe')
+    cli2 = path_join(program_files_x86, 'dotnet', 'dotnet.exe')
+    
+    results = []
+    if path_isfile(cli1):
+        results += _parse_dotnetcli_msbuild_ver_output(cli1, ARCH64)
+        
+    if path_isfile(cli2):
+        results += _parse_dotnetcli_msbuild_ver_output(cli2, ARCH32)
+        
+    return results
+    
+add_default_finder(_win_dotnetcli_msbuild)
