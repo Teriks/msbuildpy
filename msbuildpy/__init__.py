@@ -28,7 +28,7 @@ from .searcher import \
     add_default_finder, \
     get_default_finders
 
-from msbuildpy.private import finders
+from .private import finders
 
 
 __author__ = 'Teriks'

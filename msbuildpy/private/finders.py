@@ -20,14 +20,16 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from re import compile as re_compile
-from os import environ as os_environ
-from subprocess import check_output as proc_check_output, CalledProcessError
-from os.path import join as path_join, basename as path_basename, sep as path_sep, isdir as path_isdir
-from msbuildpy.inspect import is_windows, is_64bit
-from msbuildpy.searcher import add_default_finder, ToolEntry
-from msbuildpy.inspect import ARCH32, ARCH64, get_mono_vm
 from glob import glob
+from os.path import join as path_join, basename as path_basename, sep as path_sep, isdir as path_isdir
+from re import compile as re_compile
+from subprocess import check_output as proc_check_output, CalledProcessError
+
+from ..searcher import add_default_finder, ToolEntry
+from os import environ as os_environ
+
+from ..inspect import ARCH32, ARCH64, get_mono_vm
+from ..inspect import is_windows, is_64bit
 
 if is_windows():
     import winreg

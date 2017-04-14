@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import re
 
 version = ''
-with open('__init__.py') as f:
+with open('msbuildpy/__init__.py') as f:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
 
 if not version:
