@@ -228,6 +228,27 @@ def _compile_single_ver_filter(v_filter):
     return (f_name, _filter)
 
 
+_VS_EDITION_PRIORITY_MAP = {
+    'community': 0,
+    'professional': 1,
+    'enterprise': 2,
+    'ultimate': 2
+}
+
+
+def _vs_edition_priority(edition):
+    if edition is None:
+        return 0
+
+    edition = edition.lower()
+
+    p = _VS_EDITION_PRIORITY_MAP.get(edition, None)
+    if p is not None:
+        return p
+
+    assert False, "Unknown edition string returned in search: {edition}".format(edition=edition)
+
+
 def compile_version_filter(version_filter):
     """
     Compile a version filter function which acts on a list of :py:class:`msbuildpy.ToolEntry` objects.
@@ -393,14 +414,17 @@ def find_msbuild(version_filter=None):
         
         
     The version filter sorts the tool entries ascending by filter priority (their OR chain order),
-    then descending by version, and then descending by arch bits (64bit comes first)
+    then descending by version, then descending by arch bits (64bit comes first), then ascending by edition.
     
     A tool entries first appearance in the filter sets the sort priority of the tool.
     
     If there are OR expressions, tools at the beginning will be first in the output if they exist.
     
-    The 'edition' attribute of :py:class:`msbuildpy.ToolEntry` does not contribute to sort order
-    at all, different editions may come in any order.
+    The 'edition' attribute of :py:class:`msbuildpy.ToolEntry` is sorted in ascending order, aka:
+    by the quantity of money you are paying Microsoft for Visual Studios.
+    
+    Tools that report an 'edition' of **None** or have have a lower value than 'community' editions, so they
+    come before them.
         
     :param version_filter: Version filter string
     
