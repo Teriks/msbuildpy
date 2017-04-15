@@ -336,8 +336,10 @@ def find_msbuild(version_filter=None):
     
     .. code-block:: python
     
-        # supports wildcards for major and minor, major and minor
-        # must be provided or expressions are also supported
+        # supports wildcards for major and minor version components.
+        # OR expressions are also supported.  You must provide the major
+        # and minor version component,  leaving out the . separator is a 
+        # syntax error.
         
         find_msbuild('msbuild 12.* | xbuild >=12.* | dotnet build *.*')
         
@@ -351,7 +353,8 @@ def find_msbuild(version_filter=None):
         
         find_msbuild('msbuild 12.* 64bit | msbuild 14.* 32bit')
         
-        # singular request example
+        # singular request example, with exact version match
+        # as well as architecture specified.
         
         find_msbuild('msbuild 14.0 64bit')
         
