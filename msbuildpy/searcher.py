@@ -256,7 +256,7 @@ def compile_version_filter(version_filter):
     See: :py:func:`msbuildpy.find_msbuild` for **version_filter** examples.
     
     :param version_filter: Version filter string.
-    :return: A function accepting a list of :py:class:`msbuildpy.ToolEntry.ToolEntry` objects.
+    :return: A function accepting a list of :py:class:`msbuildpy.ToolEntry` objects.
     """
     filter_ors = version_filter.strip().split('|')
 
