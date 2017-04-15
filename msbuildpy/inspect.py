@@ -188,7 +188,7 @@ def is_64bit():
 
 def get_arch():
     """
-    Test if the underlying OS/Machine is 64bit
+    Get the architecture of the underlying OS/Machine
     
     :return: :py:const:`msbuildpy.inspect.ARCH64` or :py:const:`msbuildpy.inspect.ARCH32`
     """
