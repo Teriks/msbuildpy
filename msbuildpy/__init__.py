@@ -44,4 +44,4 @@ __all__ = [
 __author__ = 'Teriks'
 __copyright__ = 'Copyright (c) 2017 Teriks'
 __license__ = 'Three Clause BSD'
-__version__ = '0.3.3.0'
+__version__ = '0.3.3.1'

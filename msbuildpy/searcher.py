@@ -294,7 +294,8 @@ def compile_version_filter(version_filter):
         output.sort(key=lambda l: (
                 priorities[l.name],
                 -(l.version[0]+l.version[1]),
-                0 if l.arch == ARCH64 else 1
+                0 if l.arch == ARCH64 else 1,
+                _vs_edition_priority(l.edition)
             )
         )
         return output
