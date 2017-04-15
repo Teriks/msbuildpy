@@ -22,6 +22,7 @@
 
 from .searcher import \
     Searcher, \
+    ToolEntry, \
     VersionFilterSyntaxError, \
     find_msbuild, \
     compile_version_filter, \
@@ -30,8 +31,17 @@ from .searcher import \
 
 from .private import finders
 
+__all__ = [
+    'Searcher',
+    'ToolEntry',
+    'VersionFilterSyntaxError',
+    'find_msbuild',
+    'compile_version_filter',
+    'add_default_finder',
+    'get_default_finders',
+]
 
 __author__ = 'Teriks'
 __copyright__ = 'Copyright (c) 2017 Teriks'
 __license__ = 'Three Clause BSD'
-__version__ = '0.2.1.0'
+__version__ = '0.3.1.0'

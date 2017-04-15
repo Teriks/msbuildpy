@@ -20,6 +20,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+"""
+Contains tools for inspecting system architecture/host OS, and finding mono VM's.
+"""
+
 from functools import lru_cache
 from os.path import join as path_join
 from platform import system as platform_system, machine as platform_machine
@@ -28,35 +32,61 @@ from subprocess import check_output as proc_check_output
 
 from collections import namedtuple
 
+ARCH32 = '32bit'
+"""
+Signifies 32bit architecture, is equal to '32bit'.
+"""
+
+ARCH64 = '64bit'
+"""
+Signifies 64bit architecture, is equal to '64bit'.
+"""
+
 _PLATFORM = platform_system().lower()
 
 _MACHINE = platform_machine()
 
-_MACHINE_BITS_MAP = {
-    'AMD64': lambda: ARCH64,
-    'IA64': lambda: ARCH64,
-    'x86_64': lambda: ARCH64,
-    'i386': lambda: ARCH32,
-    'x86': lambda: ARCH32
-}
-
 _ON_WINDOWS = _PLATFORM == 'windows'
 _ON_LINUX = _PLATFORM == 'linux' or _PLATFORM == 'linux2'
 _ON_MAC = _PLATFORM == 'darwin' or _PLATFORM == 'macosx'
+_ON_OPENBSD = _PLATFORM == 'openbsd'
+_ON_FREEBSD = _PLATFORM == 'freebsd'
+_ON_NETBSD = _PLATFORM == 'netbsd'
+
+_MACHINE_BITS_MAP = {
+    'AMD64': ARCH64,
+    'IA64': ARCH64,
+    'x86_64': ARCH64,
+    'i386': ARCH32,
+    'x86': ARCH32
+}
+
+
+def _machine_bits_rest(machine):
+    if _ON_LINUX or _ON_MAC:
+        try:
+            bits = proc_check_output(['getconf', 'LONG_BIT']).decode().strip()
+            return ARCH64 if bits == '64' else ARCH32
+        except OSError:
+            pass
+
+    return None
+
 
 _MONO_OUTPUT_ARCH_REGEX = re_compile('Architecture:\s*(?P<arch>.+)')
 
 _MONO_ARCH_MAP = {
- 'amd64' : lambda: ARCH64,
- 'arm': lambda: ARCH32,
- 'armel,vfp+hard': lambda: ARCH32,
- 'arm64': lambda: ARCH64,
- 'ia64': lambda: ARCH64,
- 'x86': lambda: ARCH32
+    'amd64': ARCH64,
+    'arm': ARCH32,
+    'armel,vfp+hard': ARCH32,
+    'arm64': ARCH64,
+    'ia64': ARCH64,
+    'x86': ARCH32
 }
 
-ARCH32 = '32bit'
-ARCH64 = '64bit'
+
+def _mono_arch_rest(ver_architecure):
+    return ARCH64 if is_64bit() else ARCH32
 
 
 if _ON_WINDOWS:
@@ -65,44 +95,115 @@ if _ON_WINDOWS:
 
 
 def is_windows():
+    """
+    Test if the underlying OS is Windows.
+    
+    :return: bool 
+    """
     return _ON_WINDOWS
 
 
 def is_linux():
+    """
+    Test if the underlying OS is Linux.
+    
+    :return: bool
+    """
     return _ON_LINUX
 
 
 def is_mac():
+    """
+    Test if the underlying OS is Mac OS.
+    
+    :return: bool
+    """
     return _ON_MAC
+
+
+def is_openbsd():
+    """
+    Test if the underlying OS is OpenBSD.
+    
+    :return: bool
+    """
+    return _ON_OPENBSD
+
+
+def is_freebsd():
+    """
+    Test if the underlying OS is FreeBSD.
+    
+    :return: bool
+    """
+    return _ON_FREEBSD
+
+
+def is_netbsd():
+    """
+    Test if the underlying OS is NetBSD.
+    
+    :return: bool
+    """
+    return _ON_NETBSD
 
 
 @lru_cache(maxsize=None)
 def is_32bit():
-    if _MACHINE in _MACHINE_BITS_MAP:
-        return _MACHINE_BITS_MAP[_MACHINE]() == ARCH32
-    if _ON_LINUX or _ON_MAC:
-        try:
-            return proc_check_output(['getconf','LONG_BIT']).decode().strip() == '32'
-        except OSError: pass
+    """
+    Test if the underlying OS/Machine is 32bit.
+    
+    :return: bool
+    """
+
+    bits = _MACHINE_BITS_MAP.get(_MACHINE, None)
+    if bits:
+        return bits == ARCH32
+
+    bits = _machine_bits_rest(_MACHINE)
+    if bits:
+        return bits == ARCH32
+
     raise NotImplementedError('unknown machine type')
 
 
 @lru_cache(maxsize=None)
 def is_64bit():
-    if _MACHINE in _MACHINE_BITS_MAP:
-        return _MACHINE_BITS_MAP[_MACHINE]() == ARCH64
-    if _ON_LINUX or _ON_MAC:
-        try:
-            return proc_check_output(['getconf','LONG_BIT']).decode().strip() == '64'
-        except OSError: pass
+    """
+    Test if the underlying OS/Machine is 64bit.
+    
+    :return: bool
+    """
+
+    bits = _MACHINE_BITS_MAP.get(_MACHINE, None)
+    if bits:
+        return bits == ARCH64
+
+    bits = _machine_bits_rest(_MACHINE)
+    if bits:
+        return bits == ARCH32
+
     raise NotImplementedError('unknown machine type')
 
 
 def get_arch():
+    """
+    Test if the underlying OS/Machine is 64bit
+    
+    :return: :py:const:`msbuildpy.inspect.ARCH64` or :py:const:`msbuildpy.inspect.ARCH32`
+    """
+
     return ARCH32 if is_32bit() else ARCH64
 
 
-MonoVm = namedtuple('MonoVm', ['version', 'arch', 'path'])
+class MonoVm(namedtuple('MonoVm', ['version', 'arch', 'path'])):
+    """
+    Represents a Mono VM binary, with version, architecture and binary path.
+    
+    :var version: Version tuple (major, minor, patch)
+    :var arch: Architecture, :py:const:`msbuildpy.inspect.ARCH64` or :py:const:`msbuildpy.inspect.ARCH32`
+    :var path: Full path to the binary, (a string).
+    """
 
 
 def _win_read_mono_vm_from_registry_key(key, arch):
@@ -141,20 +242,19 @@ def _win_get_mono_vm_x86():
 def _other_get_mono_vm():
     try:
         version = proc_check_output(["mono", "--version"]).decode()
-        
-        
+
         arch_match = _MONO_OUTPUT_ARCH_REGEX.search(version)
 
         if arch_match is None:
             arch = ARCH64 if is_64bit() else ARCH32
         else:
             arch = arch_match.group('arch')
-            
-            arch = _MONO_ARCH_MAP.get(
-               arch, 
-               lambda: ARCH64 if is_64bit() else ARCH32
-            )()
- 
+
+            arch = _MONO_ARCH_MAP.get(arch, None)
+
+            if arch is None:
+                arch = _mono_arch_rest(arch)
+
         version = version[26:]
         version = tuple(int(i) for i in version[:version.find(' ')].split("."))
         path = proc_check_output(['which', 'mono']).decode().strip()
@@ -166,6 +266,16 @@ def _other_get_mono_vm():
 
 @lru_cache(maxsize=None)
 def get_mono_vm(arch=None):
+    """
+    Try to find a Mono VM binary.  If architecture is not specified, this function
+    will prioritize returning a 64bit VM over a 32bit VM if both are installed.
+    
+    Returns **None** if no VM is found.
+    
+    :param arch: Architecture, :py:const:`msbuildpy.inspect.ARCH64` or :py:const:`msbuildpy.inspect.ARCH32`
+    
+    :return: :py:class:`msbuildpy.inspect.MonoVm` or **None**
+    """
     if arch is None:
         if is_windows():
             r = _win_get_mono_vm_x64()

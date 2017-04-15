@@ -51,19 +51,52 @@ _FILTER_REGEX = re_compile(r"""
 _DEFAULT_FINDERS = []
 
 
-ToolEntry = namedtuple('ToolEntry', ['name', 'version', 'arch', 'path'])
+class ToolEntry(namedtuple('ToolEntry', ['name', 'version', 'arch', 'path'])):
+    """
+    Represents an MSBuild tool binary/location.
+    
+    Architecture is dependent on the architecture of the tool install.
+    
+    On Unix like systems architecture most likely aligns to the OS architecture.
+    But on Windows, Microsoft distributes MSBuild 12 and 14 in separate x86 and x64 versions.
+    
+    MSBuild 15 on windows (VS2017) only installs an x86 built version.
+    
+    :var name: Tool name. ie 'msbuild', 'xbuild' or 'dotnet build'
+    :var version: Version tuple (major, minor)
+    :var arch: Architecture of tool installation, :py:const:`msbuildpy.inspect.ARCH64` or :py:const:`msbuildpy.inspect.ARCH32`
+    :var path: Full path to the binary, (a string).
+    """
 
 
 class VersionFilterSyntaxError(Exception):
+    """
+    Raised by :py:func:`msbuildpy.compile_version_filter` if there is a syntax
+    error in the version filter expression provided to it.
+    """
     def __init__(self, message):
         super(VersionFilterSyntaxError, self).__init__(message)
 
 
 def add_default_finder(finder):
+    """
+    Add a default finder function.
+    
+    Finder functions should return a list of :py:class:`msbuildpy.ToolEntry` objects, or **None**
+    
+    :param finder: A function accepting no arguments.
+    """
     _DEFAULT_FINDERS.append(finder)
 
 
 def get_default_finders():
+    """
+    Get default finder functions.
+    
+    See: :py:func:`msbuildpy.add_default_finder`
+    
+    :return: Copied list of default finder functions.
+    """
     return list(_DEFAULT_FINDERS)
 
 
@@ -184,6 +217,14 @@ def _compile_single_ver_filter(v_filter):
 
 
 def compile_version_filter(version_filter):
+    """
+    Compile a version filter function which acts on a list of :py:class:`msbuildpy.ToolEntry` objects.
+    
+    See: :py:func:`msbuildpy.find_msbuild` for **version_filter** examples.
+    
+    :param version_filter: Version filter string.
+    :return: A function accepting a list of :py:class:`msbuildpy.ToolEntry.ToolEntry` objects.
+    """
     filter_ors = version_filter.strip().split('|')
 
     priorities = dict()
@@ -228,16 +269,54 @@ def compile_version_filter(version_filter):
 
 
 class Searcher:
-    def __init__(self):
-        self._finders = get_default_finders()
+    """
+    Tool searcher in object form.  Allows additional finders to be associated
+    with an object instead of with the module globally.
+    
+    The searcher object is populated with the default finder functions in the module when **use_default_finders=True**
+    """
+    def __init__(self, use_default_finders=True):
+        """
+        Init the searcher, populate it with :py:func:`msbuildpy.get_default_finders` unless **use_default_finders**
+        is set to **False**.
+        
+        :param use_default_finders: bool, whether to populate the searcher with the modules default finder functions. 
+        """
+        if use_default_finders:
+            self._finders = get_default_finders()
+        else:
+            self._finders = []
 
     def add_finder(self, finder):
+        """
+        Add a finder function.
+        
+        Finder functions should return a list of :py:class:`msbuildpy.ToolEntry` objects, or **None**
+        
+        :param finder: A function accepting no arguments.
+        """
         self._finders.append(finder)
 
     def get_finders(self):
+        """
+        Get finder functions.
+        
+        See: :py:func:`msbuildpy.add_default_finder`
+        
+        :return: Copied list of finder functions in this Searcher.
+        """
         return list(self._finders)
 
     def find(self, version_filter=None):
+        """
+        Find msbuild tools on the system using the finders in this Searcher object.
+        
+        See: :py:func:`msbuildpy.find_msbuild` for **version_filter** examples.
+        
+        :param version_filter: Version filter string
+    
+        :return: A list of :py:class:`msbuildpy.ToolEntry` objects, which may be empty.
+        """
         values = set()
 
         for finder in self._finders:
@@ -250,4 +329,46 @@ class Searcher:
 
 
 def find_msbuild(version_filter=None):
+    """
+        Find msbuild tools on the system, using an optional version filter.
+    
+        Version Filter Examples:
+    
+    .. code-block:: python
+    
+        # supports wildcards for major and minor, major and minor
+        # must be provided or expressions are also supported
+        
+        find_msbuild('msbuild 12.* | xbuild >=12.* | dotnet build *.*')
+        
+        # operators against version numbers include (>= | <= | > | <)
+        # operators can come before and after each version component 
+        # to specify a limited range
+        
+        find_msbuild('msbuild >=12.* | xbuild >=12<15.*')
+        
+        # architecture can be specified
+        
+        find_msbuild('msbuild 12.* 64bit | msbuild 14.* 32bit')
+        
+        # singular request example
+        
+        find_msbuild('msbuild 14.0 64bit')
+        
+        # find the dotnet cli build tool
+        
+        find_msbuild('dotnet build 15.*')
+        
+    The version filter sorts the tool entries ascending by filter priority (their OR chain order),
+    then descending by version, and then descending by arch bits (64bit comes first)
+    
+    A tool entries first appearance in the filter sets the sort priority of the tool.
+    
+    If there are OR expressions, tools at the beginning will be first in the output if they exist.
+        
+    :param version_filter: Version filter string
+    
+    :return: A list of :py:class:`msbuildpy.ToolEntry` objects, which may be empty.
+    """
+
     return Searcher().find(version_filter=version_filter)
