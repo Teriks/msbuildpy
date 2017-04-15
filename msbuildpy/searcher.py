@@ -424,7 +424,7 @@ def find_msbuild(version_filter=None):
     The 'edition' attribute of :py:class:`msbuildpy.ToolEntry` is sorted in ascending order, aka:
     by the quantity of money you are paying Microsoft for Visual Studios.
     
-    Tools that report an 'edition' of **None** have have a lower value than 'community' editions, so they
+    Tools that report an 'edition' of **None** have a lower value than 'community' editions, so they
     come before them.
         
     :param version_filter: Version filter string
