@@ -21,7 +21,14 @@
 
 
 from glob import glob
-from os.path import join as path_join, basename as path_basename, sep as path_sep, isdir as path_isdir, isfile as path_isfile
+
+from os.path import join as path_join, \
+    basename as path_basename, \
+    sep as path_sep, \
+    isdir as path_isdir, \
+    isfile as path_isfile, \
+    dirname as path_dirname
+
 from re import compile as re_compile
 from subprocess import check_output as proc_check_output, CalledProcessError
 
@@ -50,7 +57,7 @@ def _parse_msbuild_ver_output(binary_path, arch):
     match = _MSBUILD_VER_REGEX.match(version_output)
     if match:
         version = tuple(int(x) for x in match.group('ver').split('.'))
-        return [ToolEntry(name='msbuild', version=version, arch=arch, path=binary_path)]
+        return [ToolEntry(name='msbuild', version=version, arch=arch, edition=None, path=binary_path)]
     else:
         return []
 
@@ -61,7 +68,7 @@ def _parse_dotnetcli_msbuild_ver_output(binary_path, arch):
     match = _MSBUILD_VER_REGEX.match(version_output)
     if match:
         version = tuple(int(x) for x in match.group('ver').split('.'))
-        return [ToolEntry(name='dotnet build', version=version, arch=arch, path=binary_path)]
+        return [ToolEntry(name='dotnet build', version=version, arch=arch, edition=None, path=binary_path)]
     else:
         return []
 
@@ -72,7 +79,7 @@ def _parse_xbuild_ver_output(binary_path, arch):
     match = _XBUILD_VER_REGEX.match(version_output)
     if match:
         version = tuple(int(x) for x in match.group('ver').split('.'))
-        return [ToolEntry(name='xbuild', version=version, arch=arch, path=binary_path)]
+        return [ToolEntry(name='xbuild', version=version, arch=arch, edition=None, path=binary_path)]
     else:
         return []
 
@@ -151,6 +158,7 @@ def _win_msbuild_paths_12_14():
                  name='msbuild', 
                  version=tuple(int(i) for i in version.strip().split('.')),
                  arch=arch,
+                 edition=None,
                  path=path_join(x[1], r'MSBuild.exe'))
                  for x in win_enum_reg_key(key) if x[0] == 'MSBuildOverrideTasksPath']
 
@@ -187,19 +195,41 @@ def _win_msbuild_paths_12_14():
 add_default_finder(_win_msbuild_paths_12_14)
 
 
+def _win_msbuild_paths_15_read_reg_key(key, arch):
+
+    reg_values = win_dict_reg_key(key)
+    path = reg_values.get('15.0', None)
+    results = []
+
+    if path:
+        msbuild_dir = 'MSBuild\\15.0\\Bin\\MSBuild.exe'
+        common_dir = path_dirname(path.rstrip(path_sep))
+
+        community = path_join(common_dir, 'Community', msbuild_dir)
+        if path_isfile(community):
+            results.append(ToolEntry(name='msbuild', version=(15,0), arch=arch, edition='community', path=community))
+
+        professional = path_join(common_dir, 'Professional', msbuild_dir)
+        if path_isfile(professional):
+            results.append(ToolEntry(name='msbuild', version=(15,0), arch=arch, edition='professional', path=professional))
+
+        enterprise = path_join(common_dir, 'Enterprise', msbuild_dir)
+        if path_isfile(enterprise):
+            results.append(ToolEntry(name='msbuild', version=(15,0), arch=arch, edition='enterprise', path=enterprise))
+
+    return results
+
+
 def _win_msbuild_paths_15_x64():
-    if not is_windows(): return None
+    if not is_windows():
+        return None
 
     try:
         with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
                             r'SOFTWARE\Microsoft\VisualStudio\SxS\VS7', 0,
                             winreg.KEY_READ | winreg.KEY_WOW64_64KEY) as key:
 
-            return [ToolEntry(name='msbuild', 
-                              version=tuple(int(i) for i in x[0].split('.')),
-                              arch=ARCH64,
-                              path=path_join(x[1], r'MSBuild\15.0\Bin\MSBuild.exe'))
-                    for x in win_enum_reg_key(key) if x[0] == '15.0']
+            return _win_msbuild_paths_15_read_reg_key(key, ARCH64)
     except OSError:
         return None
 
@@ -208,18 +238,16 @@ add_default_finder(_win_msbuild_paths_15_x64)
 
 
 def _win_msbuild_paths_15_x86():
-    if not is_windows(): return None
+    if not is_windows():
+        return None
+
     try:
         with winreg.OpenKey(
                 winreg.HKEY_LOCAL_MACHINE,
                 r'SOFTWARE\WOW6432Node\Microsoft\VisualStudio\SxS\VS7', 0,
                 winreg.KEY_READ | winreg.KEY_WOW64_64KEY) as key:
 
-            return [ToolEntry(name='msbuild', 
-                              version=tuple(int(i) for i in x[0].split('.')),
-                              arch=ARCH32,
-                              path=path_join(x[1], r'MSBuild\15.0\Bin\MSBuild.exe'))
-                    for x in win_enum_reg_key(key) if x[0] == '15.0']
+            return _win_msbuild_paths_15_read_reg_key(key, ARCH32)
     except OSError:
         return None
 

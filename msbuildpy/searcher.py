@@ -43,15 +43,15 @@ _FILTER_REGEX = re_compile(r"""
 (?P<minor>\*|[0-9]+)   # minor version number
 \s*?
 (?:(?P<minor_operator2><=|>=|<|>)\s*(?P<minor_operator2_arg>[*0-9]+))?  # second minor version constraint, with integer parameter
-(?:\s(?P<arch_constraint>32bit|64bit))?    # space, then optional arch constraint
-
+(?:\s(?P<arch_constraint>32bit|64bit))?   # space, then optional arch constraint
+(?:\s(?P<edition_constraint>[a-zA-Z]+))?  # space, then optional edition constraint
 """, re_VERBOSE)
 
 
 _DEFAULT_FINDERS = []
 
 
-class ToolEntry(namedtuple('ToolEntry', ['name', 'version', 'arch', 'path'])):
+class ToolEntry(namedtuple('ToolEntry', ['name', 'version', 'arch', 'edition', 'path'])):
     """
     Represents an MSBuild tool binary/location.
     
@@ -62,9 +62,12 @@ class ToolEntry(namedtuple('ToolEntry', ['name', 'version', 'arch', 'path'])):
     
     MSBuild 15 on windows (VS2017) only installs an x86 built version.
     
+    MSBuild 15 on windows is currently the only tool which populates the 'edition' attribute.
+    
     :var name: Tool name. ie 'msbuild', 'xbuild' or 'dotnet build'
     :var version: Version tuple (major, minor)
     :var arch: Architecture of tool installation, :py:const:`msbuildpy.inspect.ARCH64` or :py:const:`msbuildpy.inspect.ARCH32`
+    :var edition: Visual Studio's edition if applicable: 'community', 'professional' or 'enterprise'
     :var path: Full path to the binary, (a string).
     """
 
@@ -132,6 +135,7 @@ def _compile_single_ver_filter(v_filter):
     f_major_op2_arg = match.group('major_operator2_arg')
     f_minor_op2_arg = match.group('minor_operator2_arg')
     f_arch_constraint = match.group('arch_constraint')
+    f_edition_constraint = match.group('edition_constraint')
 
     if f_major_op:
         f_major_op = f_major_op.strip()
@@ -161,21 +165,27 @@ def _compile_single_ver_filter(v_filter):
     wildcard_major = f_major == '*'
     wildcard_minor = f_minor == '*'
     
-    def check_name_and_arch(name, arch):
-        if f_arch_constraint is not None and f_arch_constraint != arch: return False
+    def check_exacts(name, arch, edition):
+        edition = edition.lower() if edition is not None else None
+
+        if f_arch_constraint is not None and f_arch_constraint != arch:
+            return False
+        if f_edition_constraint is not None and f_edition_constraint.lower() != edition:
+            return False
         if name == f_name:
             return True
         return False 
 
     if wildcard_major and wildcard_minor:
 
-        def _filter(name, major, minor, arch):
-            return check_name_and_arch(name, arch)
+        def _filter(name, major, minor, arch, edition):
+            return check_exacts(name, arch, edition)
 
     elif wildcard_major:
 
-        def _filter(name, major, minor, arch):
-            if not check_name_and_arch(name, arch): return False
+        def _filter(name, major, minor, arch, edition):
+            if not check_exacts(name, arch, edition):
+                return False
 
             filter_pass = _filter_ver_op(minor, f_minor, f_minor_op)
             if f_minor_op2:
@@ -186,8 +196,9 @@ def _compile_single_ver_filter(v_filter):
 
     elif wildcard_minor:
 
-        def _filter(name, major, minor, arch):
-            if not check_name_and_arch(name, arch): return False
+        def _filter(name, major, minor, arch, edition):
+            if not check_exacts(name, arch, edition):
+                return False
 
             filter_pass = _filter_ver_op(major, f_major, f_major_op)
             if f_major_op2:
@@ -198,8 +209,9 @@ def _compile_single_ver_filter(v_filter):
 
     else:
 
-        def _filter(name, major, minor, arch):
-            if not check_name_and_arch(name, arch): return False
+        def _filter(name, major, minor, arch, edition):
+            if not check_exacts(name, arch, edition):
+                return False
 
             filter_pass = _filter_ver_op(minor, f_minor,
                                          f_minor_op) and _filter_ver_op(
@@ -243,6 +255,7 @@ def compile_version_filter(version_filter):
             name = entry.name
             ver_num = entry.version
             arch = entry.arch
+            edition = entry.edition
 
             if type(ver_num) is str:
                 ver_major = ver_num.split('.')
@@ -253,7 +266,7 @@ def compile_version_filter(version_filter):
                 ver_minor = ver_num[1]
 
             for v_filter in chain:
-                if v_filter(name, ver_major, ver_minor, arch):
+                if v_filter(name, ver_major, ver_minor, arch, edition):
                     output.append(entry)
         
         # sort ascending by filter priority, descending by version, descending by arch bits (64bit first)
@@ -353,6 +366,22 @@ def find_msbuild(version_filter=None):
         
         find_msbuild('msbuild 12.* 64bit | msbuild 14.* 32bit')
         
+        # edition can be specified, with or without architecture
+        # this only really applies to Microsofts build tool
+        
+        # MSBuild 12 and 14 on windows do not currently return an edition
+        #
+        # (Not Implemented yet, unsure if needed.  All of the editions may use
+        #  the same tool, I have not checked yet)
+        #
+        # So their ToolEntry's will always have: edition = **None**
+        
+        find_msbuild('msbuild 15.* professional | msbuild 15.* community')
+        
+        # With architecture. (Note, edition is not case sensitive)
+        
+        find_mbuild('msbuild 15.* 32bit Enterprise')
+        
         # singular request example, with exact version match
         # as well as architecture specified.
         
@@ -362,12 +391,16 @@ def find_msbuild(version_filter=None):
         
         find_msbuild('dotnet build 15.*')
         
+        
     The version filter sorts the tool entries ascending by filter priority (their OR chain order),
     then descending by version, and then descending by arch bits (64bit comes first)
     
     A tool entries first appearance in the filter sets the sort priority of the tool.
     
     If there are OR expressions, tools at the beginning will be first in the output if they exist.
+    
+    The 'edition' attribute of :py:class:`msbuildpy.ToolEntry` does not contribute to sort order
+    at all, different editions may come in any order.
         
     :param version_filter: Version filter string
     
