@@ -1,3 +1,5 @@
+|docs|
+
 **msbuildpy** is a small python library for locating MSBuild, xbuild and dotnet build binaries.
 
 Works for msbuild/xbuild/dotnet build major versions 12+
@@ -9,7 +11,7 @@ It also contains tools to:
  - Determine system architecture and host OS.
 
  - Find mono VM installations.
- 
+
 
 Example:
 
@@ -73,3 +75,8 @@ Output:
     2
     5
     (2, 5)
+
+.. |docs| image:: https://readthedocs.org/projects/msbuildpy/badge/?version=latest
+    :alt: Documentation Status
+    :scale: 100%
+    :target: http://msbuildpy.readthedocs.io/en/latest/?badge=latest
