@@ -67,7 +67,7 @@ class ToolEntry(namedtuple('ToolEntry', ['name', 'version', 'arch', 'edition', '
     :var name: Tool name. ie 'msbuild', 'xbuild' or 'dotnet build'
     :var version: Version tuple (major, minor)
     :var arch: Architecture of tool installation, :py:const:`msbuildpy.inspect.ARCH64` or :py:const:`msbuildpy.inspect.ARCH32`
-    :var edition: Visual Studio's edition if applicable: 'community', 'professional' or 'enterprise'
+    :var edition: Visual Studio's edition if applicable: 'community', 'professional', 'enterprise' or 'standalone'
     :var path: Full path to the binary, (a string).
     """
 
@@ -232,13 +232,14 @@ _VS_EDITION_PRIORITY_MAP = {
     'community': 1,
     'professional': 2,
     'enterprise': 3,
-    'ultimate': 3
+    'ultimate': 3,
+    'standalone': 4
 }
 
 
 def _vs_edition_priority(edition):
     if edition is None:
-        return 0
+        return 5
 
     edition = edition.lower()
 
@@ -404,6 +405,10 @@ def find_msbuild(version_filter=None):
         
         find_mbuild('msbuild 15.* 32bit Enterprise')
         
+        # Get the standalone build tools if they are installed
+        
+        find_msbuild('msbuild 15.* standalone')
+        
         # singular request example, with exact version match
         # as well as architecture specified.
         
@@ -424,8 +429,8 @@ def find_msbuild(version_filter=None):
     The 'edition' attribute of :py:class:`msbuildpy.ToolEntry` is sorted in ascending order, aka:
     by the quantity of money you are paying Microsoft for Visual Studios.
     
-    Tools that report an 'edition' of **None** have a lower value than 'community' editions, so they
-    come before them.
+    Tools that report an edition of **None** or **'standalone'** have a higher value than named editions, so they
+    come last in the output.
         
     :param version_filter: Version filter string
     

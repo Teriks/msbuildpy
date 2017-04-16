@@ -32,13 +32,13 @@ def _win_msbuild_paths_15_default_standalone_path():
                              'Studio\\2017\\BuildTools\\MSBuild\\15.0\\Bin\\MSBuild.exe'
 
         if path_isfile(default):
-            results += parse_msbuild_ver_output(default, ARCH32)
+            results += parse_msbuild_ver_output(default, ARCH32, edition='standalone')
 
         default = d_letter + ':\\Program Files\\Microsoft Visual ' \
                              'Studio\\2017\\BuildTools\\MSBuild\\15.0\\Bin\\MSBuild.exe'
 
         if path_isfile(default):
-            results += parse_msbuild_ver_output(default, ARCH64)
+            results += parse_msbuild_ver_output(default, ARCH64, edition='standalone')
 
     return results
 
