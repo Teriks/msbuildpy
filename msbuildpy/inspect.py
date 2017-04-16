@@ -32,6 +32,8 @@ from subprocess import check_output as proc_check_output
 
 from collections import namedtuple
 
+from .private.win_util import win_values_dict_reg_key
+
 ARCH32 = '32bit'
 """
 Signifies 32bit architecture, is equal to '32bit'.
@@ -88,10 +90,6 @@ _MONO_ARCH_MAP = {
 def _mono_arch_rest(ver_architecure):
     return ARCH64 if is_64bit() else ARCH32
 
-
-if _ON_WINDOWS:
-    import winreg
-    from .private.util import win_dict_reg_key
 
 
 def is_windows():
@@ -207,7 +205,7 @@ class MonoVm(namedtuple('MonoVm', ['version', 'arch', 'path'])):
 
 
 def _win_read_mono_vm_from_registry_key(key, arch):
-    values = win_dict_reg_key(key)
+    values = win_values_dict_reg_key(key)
     install_root = values.get('SdkInstallRoot', None)
     version = values.get('Version', None)
     if install_root is None or version is None: return None
@@ -220,6 +218,7 @@ def _win_read_mono_vm_from_registry_key(key, arch):
 
 
 def _win_get_mono_vm_x64():
+    import winreg
     try:
         with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
                             r'SOFTWARE\Mono', 0,
@@ -230,6 +229,7 @@ def _win_get_mono_vm_x64():
 
 
 def _win_get_mono_vm_x86():
+    import winreg
     try:
         with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
                             r'SOFTWARE\WOW6432Node\Mono', 0,

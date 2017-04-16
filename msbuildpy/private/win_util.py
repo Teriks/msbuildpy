@@ -20,28 +20,50 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from .searcher import \
-    Searcher, \
-    ToolEntry, \
-    VersionFilterSyntaxError, \
-    find_msbuild, \
-    compile_version_filter, \
-    add_default_finder, \
-    get_default_finders
+def win_get_drive_letters():
+    import string
+    from ctypes import windll
+    drives = []
+    bitmask = windll.kernel32.GetLogicalDrives()
+    for letter in string.ascii_uppercase:
+        if bitmask & 1:
+            drives.append(letter)
+        bitmask >>= 1
+    return drives
 
-from .private import finders_entrypoint
+def win_enum_values_reg_key(key):
+    import winreg
+    
+    values = []
+    i = 0
+    try:
+        while True:
+            values.append(winreg.EnumValue(key, i))
+            i += 1
+    except OSError:
+        pass
+    return ((x[0], x[1]) for x in values)
 
-__all__ = [
-    'Searcher',
-    'ToolEntry',
-    'VersionFilterSyntaxError',
-    'find_msbuild',
-    'compile_version_filter',
-    'add_default_finder',
-    'get_default_finders',
-]
 
-__author__ = 'Teriks'
-__copyright__ = 'Copyright (c) 2017 Teriks'
-__license__ = 'Three Clause BSD'
-__version__ = '0.3.3.1'
+def win_enum_keys_reg_key(key):
+    import winreg
+
+    i = 0
+    try:
+        while True:
+            yield winreg.EnumKey(key, i)
+            i += 1
+    except OSError:
+        pass
+
+
+def win_values_dict_reg_key(key):
+    result = dict()
+    for pair in win_enum_values_reg_key(key):
+        result[pair[0]] = pair[1]
+    return result
+
+
+def win_open_reg_key_hklm(path):
+    import winreg
+    return winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY)

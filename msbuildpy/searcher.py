@@ -229,10 +229,10 @@ def _compile_single_ver_filter(v_filter):
 
 
 _VS_EDITION_PRIORITY_MAP = {
-    'community': 0,
-    'professional': 1,
-    'enterprise': 2,
-    'ultimate': 2
+    'community': 1,
+    'professional': 2,
+    'enterprise': 3,
+    'ultimate': 3
 }
 
 

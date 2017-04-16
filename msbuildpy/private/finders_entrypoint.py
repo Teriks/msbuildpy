@@ -20,22 +20,44 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-def win_enum_reg_key(key):
-    import winreg
-    
+from os.path import basename as path_basename
+
+from os import environ as os_environ
+
+from .finder_util import parse_dotnetcli_msbuild_ver_output, \
+    parse_msbuild_ver_output, \
+    parse_xbuild_ver_output
+
+from msbuildpy.inspect import ARCH32
+from msbuildpy.searcher import add_default_finder
+
+
+def _env_msbuild_paths():
     values = []
-    i = 0
-    try:
-        while True:
-            values.append(winreg.EnumValue(key, i))
-            i += 1
-    except OSError:
-        pass
-    return ((x[0], x[1]) for x in values)
+
+    msbuild = os_environ.get('MSBUILD_PATH', None)
+    xbuild = os_environ.get('XBUILD_PATH', None)
+
+    if msbuild:
+        if path_basename(msbuild).lower() == 'dotnet':
+            values += parse_dotnetcli_msbuild_ver_output(msbuild, ARCH32)
+        else:
+            values += parse_msbuild_ver_output(msbuild, ARCH32)
+
+    if xbuild:
+        values += parse_xbuild_ver_output(xbuild, ARCH32)
+
+    return values
+
+add_default_finder(_env_msbuild_paths)
 
 
-def win_dict_reg_key(key):
-    result = dict()
-    for pair in win_enum_reg_key(key):
-        result[pair[0]] = pair[1]
-    return result
+from . import finders
+
+
+
+
+
+
+
+
