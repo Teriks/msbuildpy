@@ -74,7 +74,7 @@ class ToolEntry(collections.namedtuple('ToolEntry', ['name', 'version', 'arch', 
     
     :var name: Tool name. ie 'msbuild', 'xbuild' or 'dotnet build'
     :var version: Version tuple of varying size (major, minor, ...)
-    :var arch: Architecture of tool installation, :py:const:`msbuildpy.inspect.ARCH64` or :py:const:`msbuildpy.inspect.ARCH32`
+    :var arch: Architecture of tool installation, :py:const:`msbuildpy.sysinspect.ARCH64` or :py:const:`msbuildpy.sysinspect.ARCH32`
     :var edition: Visual Studio's edition if applicable: 'community', 'professional', 'enterprise' or 'standalone'
     :var path: Full path to the binary, (a string).
     """

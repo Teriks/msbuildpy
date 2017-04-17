@@ -187,7 +187,7 @@ def get_arch():
     """
     Get the architecture of the underlying OS/Machine
     
-    :return: :py:const:`msbuildpy.inspect.ARCH64` or :py:const:`msbuildpy.inspect.ARCH32`
+    :return: :py:const:`msbuildpy.sysinspect.ARCH64` or :py:const:`msbuildpy.sysinspect.ARCH32`
     """
 
     return ARCH32 if is_32bit() else ARCH64
@@ -198,7 +198,7 @@ class MonoVm(namedtuple('MonoVm', ['version', 'arch', 'path'])):
     Represents a Mono VM binary, with version, architecture and binary path.
     
     :var version: Version tuple (major, minor, patch)
-    :var arch: Architecture, :py:const:`msbuildpy.inspect.ARCH64` or :py:const:`msbuildpy.inspect.ARCH32`
+    :var arch: Architecture, :py:const:`msbuildpy.sysinspect.ARCH64` or :py:const:`msbuildpy.sysinspect.ARCH32`
     :var path: Full path to the binary, (a string).
     """
 
@@ -271,9 +271,9 @@ def get_mono_vm(arch=None):
     
     Returns **None** if no VM is found.
     
-    :param arch: Architecture, :py:const:`msbuildpy.inspect.ARCH64` or :py:const:`msbuildpy.inspect.ARCH32`
+    :param arch: Architecture, :py:const:`msbuildpy.sysinspect.ARCH64` or :py:const:`msbuildpy.sysinspect.ARCH32`
     
-    :return: :py:class:`msbuildpy.inspect.MonoVm` or **None**
+    :return: :py:class:`msbuildpy.sysinspect.MonoVm` or **None**
     """
     if arch is None:
         if is_windows():
