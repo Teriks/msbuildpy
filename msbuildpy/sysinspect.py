@@ -91,7 +91,6 @@ def _mono_arch_rest(ver_architecure):
     return ARCH64 if is_64bit() else ARCH32
 
 
-
 def is_windows():
     """
     Test if the underlying OS is Windows.

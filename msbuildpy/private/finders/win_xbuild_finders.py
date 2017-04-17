@@ -1,4 +1,5 @@
 from glob import glob
+
 from os.path import join as path_join, \
     basename as path_basename, \
     sep as path_sep, \
@@ -10,9 +11,9 @@ from msbuildpy.private.finder_util import parse_xbuild_ver_output, \
 from msbuildpy.private.win_util import win_values_dict_reg_key, \
     win_open_reg_key_hklm
 
-from msbuildpy.inspect import ARCH32, ARCH64
-from msbuildpy.inspect import is_windows
 from msbuildpy.searcher import add_default_finder
+
+from msbuildpy.sysinspect import ARCH32, ARCH64, is_windows
 
 
 def _win_xbuild_path_x64():

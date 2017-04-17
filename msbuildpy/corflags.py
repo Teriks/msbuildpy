@@ -23,9 +23,10 @@
 Contains tools for reading CorFlags from .NET assemblies/executables.
 """
 
-from struct import unpack
-from collections import namedtuple
 from enum import Enum as Enum
+from struct import unpack
+
+from collections import namedtuple
 
 
 class PEFormat(Enum):

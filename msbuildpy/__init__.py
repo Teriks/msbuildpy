@@ -19,24 +19,22 @@
 # ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
+from .private import finders_entrypoint
 from .searcher import \
     Searcher, \
     ToolEntry, \
-    VersionFilterSyntaxError, \
     find_msbuild, \
-    compile_version_filter, \
+    compile_tool_filter, \
     add_default_finder, \
     get_default_finders
-
-from .private import finders_entrypoint
+from .version import VersionFilterSyntaxError
 
 __all__ = [
     'Searcher',
     'ToolEntry',
     'VersionFilterSyntaxError',
     'find_msbuild',
-    'compile_version_filter',
+    'compile_tool_filter',
     'add_default_finder',
     'get_default_finders',
 ]
@@ -44,4 +42,4 @@ __all__ = [
 __author__ = 'Teriks'
 __copyright__ = 'Copyright (c) 2017 Teriks'
 __license__ = 'Three Clause BSD'
-__version__ = '0.3.3.3'
+__version__ = '0.4.0.0'

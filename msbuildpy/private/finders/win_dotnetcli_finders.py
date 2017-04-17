@@ -4,9 +4,8 @@ from os.path import join as path_join, \
 from os import environ as os_environ
 
 from msbuildpy.private.finder_util import parse_dotnetcli_msbuild_ver_output
-from msbuildpy.inspect import ARCH32, ARCH64
-from msbuildpy.inspect import is_windows
 from msbuildpy.searcher import add_default_finder
+from msbuildpy.sysinspect import ARCH32, ARCH64, is_windows
 
 
 def _win_dotnetcli_msbuild():
@@ -27,5 +26,6 @@ def _win_dotnetcli_msbuild():
         results += parse_dotnetcli_msbuild_ver_output(cli2, ARCH32)
 
     return results
+
 
 add_default_finder(_win_dotnetcli_msbuild)

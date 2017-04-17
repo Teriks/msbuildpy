@@ -31,9 +31,10 @@ def win_get_drive_letters():
         bitmask >>= 1
     return drives
 
+
 def win_enum_values_reg_key(key):
     import winreg
-    
+
     values = []
     i = 0
     try:

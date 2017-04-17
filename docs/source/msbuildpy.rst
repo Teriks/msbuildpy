@@ -13,12 +13,21 @@ Submodules
 ==========
 
 
-msbuildpy.inspect module
+msbuildpy.sysinspect module
 ------------------------
 
-.. automodule:: msbuildpy.inspect
+.. automodule:: msbuildpy.sysinspect
     :members:
     :show-inheritance:
+
+
+msbuildpy.version module
+------------------------
+
+.. automodule:: msbuildpy.version
+    :members:
+    :show-inheritance:
+
 
 msbuildpy.corflags module
 -------------------------

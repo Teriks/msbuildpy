@@ -4,9 +4,9 @@ from msbuildpy.private.finder_util import parse_dotnetcli_msbuild_ver_output, \
     parse_msbuild_ver_output, \
     parse_xbuild_ver_output
 
-from msbuildpy.inspect import ARCH32, ARCH64, get_mono_vm
-from msbuildpy.inspect import is_windows, is_64bit
 from msbuildpy.searcher import add_default_finder
+
+from msbuildpy.sysinspect import ARCH32, ARCH64, get_mono_vm, is_windows, is_64bit
 
 
 def _unix_msbuild_paths():
