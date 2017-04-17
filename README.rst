@@ -4,6 +4,8 @@
 
 Works for msbuild/xbuild/dotnet build major versions 12+
 
+**msbuildpy** can be used on Windows and *Nix platforms
+
 It also contains tools to:
 
  - Directly read the CorFlags from .NET Assemblies/Executables.
