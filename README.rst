@@ -4,7 +4,7 @@
 
 Works for msbuild/xbuild/dotnet build major versions 12+
 
-**msbuildpy** can be used on Windows and *Nix platforms
+**msbuildpy** can be used on Windows and Nix like platforms
 
 It also contains tools to:
 
