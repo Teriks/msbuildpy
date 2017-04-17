@@ -46,7 +46,7 @@ class TestStringMethods(unittest.TestCase):
 
         # ====
 
-        # These sorts of expression will work, though
+        # These sorts of expressions will work, though
         # the usefulness of them is debatable
 
         matcher = compile_matcher('>=12.*.5')
