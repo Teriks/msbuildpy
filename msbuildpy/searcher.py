@@ -158,16 +158,16 @@ def _vs_edition_priority(edition):
     assert False, "Unknown edition string returned in search: {edition}".format(edition=edition)
 
 
-def compile_tool_filter(version_filter):
+def compile_tool_filter(tool_filter):
     """
     Compile a version filter function which acts on a list of :py:class:`msbuildpy.ToolEntry` objects.
     
-    See: :py:func:`msbuildpy.find_msbuild` for **version_filter** examples.
+    See: :py:func:`msbuildpy.find_msbuild` for **tool_filter** examples.
     
-    :param version_filter: Version filter string.
+    :param tool_filter: Version filter string.
     :return: A function accepting a list of :py:class:`msbuildpy.ToolEntry` objects.
     """
-    filter_ors = version_filter.strip().split('|')
+    filter_ors = tool_filter.strip().split('|')
 
     priorities = dict()
 
@@ -239,13 +239,13 @@ class Searcher:
         """
         return list(self._finders)
 
-    def find(self, version_filter=None):
+    def find(self, tool_filter=None):
         """
         Find msbuild tools on the system using the finders in this Searcher object.
         
-        See: :py:func:`msbuildpy.find_msbuild` for **version_filter** examples.
+        See: :py:func:`msbuildpy.find_msbuild` for **tool_filter** examples.
         
-        :param version_filter: Version filter string
+        :param tool_filter: Version filter string
     
         :return: A list of :py:class:`msbuildpy.ToolEntry` objects, which may be empty.
         """
@@ -255,16 +255,20 @@ class Searcher:
             found = finder()
             if found:
                 values.update(found)
-        if version_filter:
-            return compile_tool_filter(version_filter)(values)
+        if tool_filter:
+            return compile_tool_filter(tool_filter)(values)
         return list(values)
 
 
-def find_msbuild(version_filter=None):
+def find_msbuild(tool_filter=None):
     """
         Find msbuild tools on the system, using an optional version filter.
     
-        Version Filter Examples:
+        See: :py:func:`msbuildpy.version.compile_matcher` for more version match
+        expression examples.  It is used for compile the version matchers used to
+        match version numbers in tool filter expressions.
+        
+        Tool Filter Examples:
     
     .. code-block:: python
     
@@ -272,11 +276,6 @@ def find_msbuild(version_filter=None):
         # OR expressions are also supported.
         
         find_msbuild('msbuild 12.* | xbuild >=12.* | dotnet build *.*')
-        
-        # See: :py:func:`msbuildpy.version.compile_matcher` for more version match
-        # expression examples.  It is used for compile matchers for the version numbers
-        # used in the filter expression.
-        
         
         # operators against version numbers include (>= | <= | > | <)
         # operators can come before and after each version component 
@@ -331,12 +330,12 @@ def find_msbuild(version_filter=None):
     Tools that report an edition of **None** or **'standalone'** have a higher value than named editions, so they
     come last in the output.
         
-    :param version_filter: Version filter string
+    :param tool_filter: Version filter string
     
     :return: A list of :py:class:`msbuildpy.ToolEntry` objects, which may be empty.
     """
 
-    return Searcher().find(version_filter=version_filter)
+    return Searcher().find(tool_filter=tool_filter)
 
 
 import_module('msbuildpy.private.finders_entrypoint')
