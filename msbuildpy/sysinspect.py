@@ -46,7 +46,7 @@ Signifies 64bit architecture, is equal to '64bit'.
 
 _PLATFORM = platform_system().lower()
 
-_MACHINE = platform_machine()
+_MACHINE = platform_machine().lower()
 
 _ON_WINDOWS = _PLATFORM == 'windows'
 _ON_LINUX = _PLATFORM == 'linux' or _PLATFORM == 'linux2'
@@ -56,8 +56,8 @@ _ON_FREEBSD = _PLATFORM == 'freebsd'
 _ON_NETBSD = _PLATFORM == 'netbsd'
 
 _MACHINE_BITS_MAP = {
-    'AMD64': ARCH64,
-    'IA64': ARCH64,
+    'amd64': ARCH64,
+    'ia64': ARCH64,
     'x86_64': ARCH64,
     'i386': ARCH32,
     'x86': ARCH32
@@ -65,12 +65,14 @@ _MACHINE_BITS_MAP = {
 
 
 def _machine_bits_rest(machine):
-    if _ON_LINUX or _ON_MAC:
-        try:
-            bits = proc_check_output(['getconf', 'LONG_BIT']).decode().strip()
-            return ARCH64 if bits == '64' else ARCH32
-        except OSError:
-            pass
+    try:
+        bits = proc_check_output(['getconf', 'LONG_BIT']).decode().strip()
+        if bits == '64':
+            return ARCH64
+        if bits == '32':
+            return ARCH32
+    except OSError:
+        pass
 
     return None
 
