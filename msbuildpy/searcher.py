@@ -66,9 +66,8 @@ class ToolEntry(collections.namedtuple('ToolEntry', ['name', 'version', 'arch', 
     Architecture is dependent on the architecture of the tool install.
     
     On Unix like systems architecture most likely aligns to the OS architecture.
-    But on Windows, Microsoft distributes MSBuild 12 and 14 in separate x86 and x64 versions.
-    
-    MSBuild 15 on windows (VS2017) only installs an x86 built version.
+    But on Windows, Microsoft usually distributes MSBuild side by side in both x86 and x64 versions
+    (on 64 bit systems at least).
     
     MSBuild 15 on windows is currently the only tool which populates the 'edition' attribute.
     
